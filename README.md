@@ -5,6 +5,10 @@ A production-style NLP system for movie question answering:
 - **Factual queries**: LLM-generated **single-line pandas** executed safely (validated)
 - **Router**: automatically selects semantic vs factual pipeline
 
+## Architecture
+
+![Architecture](docs/architecture.png)
+
 ## Repository Layout
 - `src/movie_rag/` — core application code
 - `data/` — datasets (ignored in git)
