@@ -1,5 +1,7 @@
 # Movie RAG QA
 
+**[Try the live demo →](https://movie-question-answering-system-rag-aa3kjbv2aaimqw5hwf292m.streamlit.app)**
+
 Ask questions about the IMDB top 1000 movies in plain English. It handles two very different kinds of questions:
 
 | You ask | What happens |
