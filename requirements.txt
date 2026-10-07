@@ -1,7 +1,6 @@
 pandas
 numpy
 faiss-cpu
-sentence-transformers
-torch
-transformers
-scikit-learn
+fastembed>=0.8
+streamlit>=1.40
+openai>=1.40

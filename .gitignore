@@ -6,11 +6,17 @@ __pycache__/
 .env
 .env.*
 
-# Don’t commit large data/artifacts
+# Raw downloads and rebuildable artifacts stay local.
+# The deployed app needs the processed CSV + FAISS index (~2MB total), so those are committed.
 data/raw/
-data/processed/
-artifacts/
+data/processed/*
+!data/processed/rich_movies.csv
+artifacts/*
+!artifacts/faiss.index
+!artifacts/movie_ids.pkl
 
 # Optional: local venvs
 .venv/
 venv/
+.model_cache/
+.streamlit/secrets.toml

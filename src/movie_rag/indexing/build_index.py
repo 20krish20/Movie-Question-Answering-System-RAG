@@ -13,7 +13,7 @@ def main():
     parser.add_argument("--data", required=True, help="Path to data/processed/rich_movies.csv")
     parser.add_argument("--outdir", required=True, help="Directory to save artifacts")
     parser.add_argument("--device", default="cpu", help="cpu or cuda")
-    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--batch_size", type=int, default=32)
     args = parser.parse_args()
 
     os.makedirs(args.outdir, exist_ok=True)

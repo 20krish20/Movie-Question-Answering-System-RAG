@@ -6,7 +6,7 @@ from movie_rag.preprocessing.text_builder import build_movie_text
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input", required=True, help="Path to IMDB_top_10000_07132023.csv")
+    parser.add_argument("--input", required=True, help="Path to raw CSV, e.g. data/raw/imdb_top_1000.csv")
     parser.add_argument("--output", required=True, help="Path to save cleaned rich_movies.csv")
     args = parser.parse_args()
 

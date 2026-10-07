@@ -1,5 +1,10 @@
 from typing import List, Dict
-import numpy as np
+import pandas as pd
+
+
+def _text(value) -> str:
+    return "" if value is None or pd.isna(value) else str(value)
+
 
 def retrieve_movies_for_query(query: str, *, k: int, embedder, index, movie_ids, rich_movies) -> List[Dict]:
     q_emb = embedder.encode_query(query)
@@ -7,6 +12,8 @@ def retrieve_movies_for_query(query: str, *, k: int, embedder, index, movie_ids,
 
     results = []
     for rank, (idx, score) in enumerate(zip(indices[0], distances[0]), start=1):
+        if idx < 0:  # FAISS pads with -1 when k > index size
+            continue
         movie_row_idx = movie_ids[idx]
         row = rich_movies.loc[movie_row_idx]
         results.append({
@@ -14,10 +21,12 @@ def retrieve_movies_for_query(query: str, *, k: int, embedder, index, movie_ids,
             "score": float(score),
             "row_idx": int(movie_row_idx),
             "Title": row["Title"],
-            "Year": int(row["Year"]) if not np.isnan(row["Year"]) else None,
-            "Genres": row.get("Genres", ""),
-            "Rating": float(row["Rating"]) if not np.isnan(row["Rating"]) else None,
-            "Summary": row.get("Summary", "")
+            "Year": int(row["Year"]) if not pd.isna(row["Year"]) else None,
+            "Genres": _text(row.get("Genres")),
+            "Director": _text(row.get("Director")),
+            "Stars": _text(row.get("Stars")),
+            "Rating": float(row["Rating"]) if not pd.isna(row["Rating"]) else None,
+            "Summary": _text(row.get("Summary"))
         })
     return results
 
