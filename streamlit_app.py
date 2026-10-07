@@ -41,13 +41,40 @@ MAX_FACTUAL_PER_SESSION = 30  # protects the shared free LLM quota
 
 st.set_page_config(page_title="Movie RAG QA", page_icon="🎬", layout="wide")
 
-# Streamlit Cloud secrets -> env vars, so movie_rag.llm reads them the same way everywhere
-try:
-    for key in ("LLM_API_KEY", "LLM_BASE_URL", "LLM_MODEL", "LLM_REASONING_EFFORT"):
-        if key in st.secrets:
-            os.environ.setdefault(key, str(st.secrets[key]))
-except Exception:  # no secrets.toml locally is fine
-    pass
+LLM_SETTINGS = ("LLM_BASE_URL", "LLM_MODEL", "LLM_REASONING_EFFORT")
+KEY_NAMES = ("LLM_API_KEY", "GROQ_API_KEY", "OPENAI_API_KEY")
+
+
+def load_secrets() -> str:
+    """Copy Streamlit secrets into env vars so movie_rag.llm reads them the same way everywhere.
+
+    Forgiving on purpose: accepts GROQ_API_KEY/OPENAI_API_KEY, any letter case, and keys
+    nested under a [section]. Returns a short diagnostic (secret names only, never values).
+    """
+    try:
+        flat = {}
+        for name, value in st.secrets.to_dict().items():
+            if isinstance(value, dict):  # e.g. [groq] api_key = "..."
+                for sub, sub_value in value.items():
+                    flat[sub.upper()] = sub_value
+                    flat[f"{name}_{sub}".upper()] = sub_value
+            else:
+                flat[name.upper()] = value
+    except FileNotFoundError:
+        return "no secrets file"
+    except Exception as e:  # invalid TOML, e.g. a bare key pasted without NAME = "..."
+        return f"secrets could not be parsed ({type(e).__name__}); use the format LLM_API_KEY = \"gsk_...\""
+
+    api_key = next((flat[k] for k in (*KEY_NAMES, "API_KEY") if flat.get(k)), None)
+    if api_key:
+        os.environ.setdefault("LLM_API_KEY", str(api_key).strip())
+    for key in LLM_SETTINGS:
+        if flat.get(key):
+            os.environ.setdefault(key, str(flat[key]))
+    return f"secret names found: {', '.join(sorted(flat)) or 'none'}"
+
+
+SECRETS_STATUS = load_secrets()
 
 
 @st.cache_resource(show_spinner="Loading movies, FAISS index and embedding model…")
@@ -120,7 +147,8 @@ with st.sidebar:
 st.title("🎬 Movie RAG QA")
 st.write(f"Ask anything about the IMDB top {qa.index.ntotal:,} movies.")
 if not llm.is_configured():
-    st.info("No LLM key configured: factual queries are disabled, semantic search works.")
+    st.info("No LLM key configured: factual queries are disabled, semantic search works.  \n"
+            f"Diagnostics: {SECRETS_STATUS}. Expected a secret like `LLM_API_KEY = \"gsk_...\"`.")
 
 st.session_state.setdefault("query", "")
 st.session_state.setdefault("factual_count", 0)
